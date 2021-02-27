@@ -32,6 +32,6 @@ systemDictionary = {
     },
     'Wait for Response (seconds, mininum: 2)': {
         'en': 'Wait for Response (seconds, mininum: 2)',
-        'de': 'Wartezeit auf Antwort vom PowerDog (Sekungen, Min.: 2',
+        'de': 'Wartezeit auf Antwort vom PowerDog (Sekunden, Min.: 2',
     }
 };
