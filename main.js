@@ -20,7 +20,7 @@ class PowerDog extends utils.Adapter {
     constructor(options) {
         super({
             ...options,
-            name: 'template',
+            name: 'powerdog',
         });
 	this.log.debug('Constructor');
         this.on('ready', this.onReady.bind(this));
