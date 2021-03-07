@@ -4,8 +4,6 @@
 
 This adapter for ioBroker is for the PowerDog from ecodata.
 
-It includes both code running within iobroker and as vis widget. If you only plan to create a vis widget then you should use the [iobroker.vis-powerdog](https://github.com/ioBroker/ioBroker.vis-powerdog) instead.
-
 ## Steps 
 1. download and unpack this packet from github ```https://github.com/ioBroker/ioBroker.powerdog/archive/master.zip```
   or clone git repository ```git clone --depth=1 https://github.com/ioBroker/ioBroker.powerdog.git```
