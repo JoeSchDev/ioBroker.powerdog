@@ -20,7 +20,7 @@
     "url": "https://github.com/JoeSchDev/ioBroker.powerdog.git"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^2.4.0"
+    "@iobroker/adapter-core": "^2.4.0",
     "xmlrpc": "^6.14.11"
   },
   "devDependencies": {
