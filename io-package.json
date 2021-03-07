@@ -1,7 +1,7 @@
 {
     "common": {
-        "name": "powerdog",
-        "version": "0.1.0",
+        "name": "iobroker.powerdog",
+        "version": "0.2.0",
         "news": {
             "0.0.1": {
                 "en": "initial release",
@@ -14,7 +14,10 @@
                 "es": "Versión inicial",
                 "pl": "Pierwsze wydanie",
                 "zh-cn": "首次出版"
-            }
+            },
+            "0.2.0": {
+                "en": "New Template adapted",
+                "de": "Neues Template adaptiert"
         },
 		"title": "PowerDog",
         "titleLang": {
@@ -38,7 +41,7 @@
             "es": "Adaptador de plantilla PowerDog"
         },
         "authors": [
-            "Author <JoeDev002@gmail.com>"
+            "Author <JoeSchDev@gmail.com>"
         ],
         "keywords": [
 		"powerdog",
@@ -51,8 +54,8 @@
 	"main": "main.js",
         "icon": "powerdog.png",
         "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/JoeDev002/iobroker.powerdog/master/admin/powerdog.png",
-        "readme": "https://github.com/JoeDev002/iobroker.powerdog/master/README.md",
+        "extIcon": "https://raw.githubusercontent.com/JoeSchDev/iobroker.powerdog/master/admin/powerdog.png",
+        "readme": "https://github.com/JoeSchDev/iobroker.powerdog/master/README.md",
         "loglevel": "info",
         "mode": "schedule",
 		"schedule": "*/5 * * * *",
@@ -87,8 +90,7 @@
     "native": {
         "IpAddress": "0.0.0.0",
         "ApiKey": "abcde",
-        "Port": 20000,
-        "Answertime": 10
+        "Port": 20000
     },
     "objects": [],
     "instanceObjects": []

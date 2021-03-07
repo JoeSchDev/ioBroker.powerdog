@@ -25,13 +25,5 @@ systemDictionary = {
     'Port of Powerdog': {
         'en': 'Port of PowerDog',
         'de': 'Port des PowerDog',
-    },
-    'Response Time': {
-        'en': 'Response Time',
-        'de': 'Antwortzeit',
-    },
-    'Wait for Response (seconds, mininum: 2)': {
-        'en': 'Wait for Response (seconds, mininum: 2)',
-        'de': 'Wartezeit auf Antwort vom PowerDog (Sekunden, Min.: 2',
     }
 };

@@ -4,10 +4,10 @@
   "description": "powerdog",
   "author": {
     "name": "Joachim Schmalz",
-    "email": "JoeDev002@gmail.com"
+    "email": "JoeSchDev@gmail.com"
   },
   
-  "homepage": "https://github.com/JoeDev002/ioBroker.powerdog.git",
+  "homepage": "https://github.com/JoeSchDev/ioBroker.powerdog.git",
   "license": "MIT",
   "keywords": [
     "ioBroker",
@@ -17,10 +17,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/JoeDev002/ioBroker.powerdog.git"
+    "url": "https://github.com/JoeSchDev/ioBroker.powerdog.git"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^2.4.0"
+    "xmlrpc": "^6.14.11"
   },
   "devDependencies": {
     "@iobroker/testing": "^2.3.0",
@@ -54,7 +55,7 @@
     "lint": "eslint"
   },
   "bugs": {
-    "url": "https://github.com/JoeDev002/ioBroker.powerdog.git/issues"
+    "url": "https://github.com/JoeSchDev/ioBroker.powerdog.git/issues"
   },
   "readmeFilename": "README.md"
 }
