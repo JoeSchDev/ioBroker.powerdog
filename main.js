@@ -33,9 +33,20 @@ class PowerDog extends utils.Adapter {
         this.on('unload', this.onUnload.bind(this));
     }
 
-    clientXmlRpc(tag) {
+    clientXmlRpcP(tag) {
         return new Promise((resolve, reject) => {
             return this.client.methodCall(tag, [this.config.ApiKey], (error, obj) => {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(obj);
+            });
+        });
+    }
+
+    getObjectP(tag) {
+        return new Promise((resolve, reject) => {
+            return this.getObject(tag, (error, obj) => {
                 if (error) {
                     return reject(error);
                 }
@@ -53,9 +64,6 @@ class PowerDog extends utils.Adapter {
         this.log.debug('IP-Address of Powerdog: ' + this.config.IpAddress);
         this.log.debug('Port of Powerdog: ' + this.config.Port);
         this.log.debug('API-Key of Powerdog: ' + this.config.ApiKey);
-        if (this.config.Answertime < 2)
-            this.config.Answertime = 2;
-        this.log.debug('Wait for Answer: ' + this.config.Answertime);
 
         /**
         *
@@ -67,27 +75,30 @@ class PowerDog extends utils.Adapter {
         // make the XML-RPC calls.
         this.client = xmlrpc.createClient({ host: this.config.IpAddress, port: this.config.Port, path: '/' })
 
-        // Sends a method call to the XML-RPC server
-        var obj = await this.clientXmlRpc('getPowerDogInfo').catch((err) => { this.log.error('XML-RPC: ' + err); });
-        for (let key in obj) {
-            // checking if it's nested
-            if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
-                let objInfo = obj[key];
-                for (let keyInfo in objInfo) {
-                    this.log.debug(keyInfo + ': ' + objInfo[keyInfo]);
-                    var name = 'Info.' + keyInfo;
-                    await this.setObjectNotExists(name, {
-                        type: 'state',
-                        common: {
-                            name: keyInfo,
-                            type: 'string',
-                            role: 'text',
-                            read: true,
-                            write: false,
-                        },
-                        native: {}
-                    });
-                    this.setState(name, { val: objInfo[keyInfo], ack: true });
+        // Check if one of the Info Object are present. Query them only one time
+        if (await this.getObjectP('Info.FullVersion').catch((err) => { this.log.error('getObjectP: ' + err); }) === null) {
+            // Sends a method call to the XML-RPC server
+            var obj = await this.clientXmlRpcP('getPowerDogInfo').catch((err) => { this.log.error('XML-RPC-P: ' + err); });
+            for (let key in obj) {
+                // checking if it's nested
+                if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+                    let objInfo = obj[key];
+                    for (let keyInfo in objInfo) {
+                        this.log.debug(keyInfo + ': ' + objInfo[keyInfo]);
+                        var name = 'Info.' + keyInfo;
+                        await this.setObjectNotExists(name, {
+                            type: 'state',
+                            common: {
+                                name: keyInfo,
+                                type: 'string',
+                                role: 'text',
+                                read: true,
+                                write: false,
+                            },
+                            native: {}
+                        });
+                        this.setState(name, { val: objInfo[keyInfo], ack: true });
+                    }
                 }
             }
         }
@@ -95,7 +106,7 @@ class PowerDog extends utils.Adapter {
         // this.log.debug(JSON.stringify(obj));
 
         // Sends a method call to the XML-RPC server
-        var obj = await this.clientXmlRpc('getSensors').catch((err) => { this.log.error('XML-RPC: ' + err); });
+        var obj = await this.clientXmlRpcP('getSensors').catch((err) => { this.log.error('XML-RPC: ' + err); });
         for (let key in obj) {
             // checking if it's nested
             if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
@@ -139,7 +150,7 @@ class PowerDog extends utils.Adapter {
         // this.log.debug('PowerDog sensor data: ' + JSON.stringify(obj));
 
         // Sends a method call to the XML-RPC server
-        var obj = await this.clientXmlRpc('getCounters').catch((err) => { this.log.error('XML-RPC: ' + err); });
+        var obj = await this.clientXmlRpcP('getCounters').catch((err) => { this.log.error('XML-RPC: ' + err); });
         for (let key in obj) {
             // checking if it's nested
             if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
