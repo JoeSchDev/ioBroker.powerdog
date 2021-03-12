@@ -1,221 +1,110 @@
+<html>
 
-'use strict';
+<head>
 
-/*
- * Created with @iobroker/create-adapter v1.31.0
- */
+    <!-- Load ioBroker scripts and styles-->
+    <link rel="stylesheet" type="text/css" href="../../css/adapter.css" />
+    <link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
 
+    <script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="../../socket.io/socket.io.js"></script>
 
-// The adapter-core module gives you access to the core ioBroker functions
-// you need to create an adapter
-const utils = require('@iobroker/adapter-core');
+    <script type="text/javascript" src="../../js/translate.js"></script>
+    <script type="text/javascript" src="../../lib/js/materialize.js"></script>
+    <script type="text/javascript" src="../../js/adapter-settings.js"></script>
 
-// Load your modules here, e.g.:
-const xmlrpc = require('xmlrpc');
+    <!-- Load our own files -->
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script type="text/javascript" src="words.js"></script>
 
-class PowerDog extends utils.Adapter {
-
-    /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
-     */
-    constructor(options) {
-        super({
-            ...options,
-            name: 'powerdog',
-        });
-
-        this.client = null;
-
-        this.on('ready', this.onReady.bind(this));
-        // this.on('stateChange', this.onStateChange.bind(this));
-        // this.on('objectChange', this.onObjectChange.bind(this));
-        // this.on('message', this.onMessage.bind(this));
-        this.on('unload', this.onUnload.bind(this));
-    }
-
-    clientXmlRpcP(tag) {
-        return new Promise((resolve, reject) => {
-            return this.client.methodCall(tag, [this.config.ApiKey], (error, obj) => {
-                if (error) {
-                    return reject(error);
+    <script type="text/javascript">
+        // This will be called by the admin adapter when the settings page loads
+        function load(settings, onChange) {
+            // example: select elements with id=key and class=value and insert value
+            if (!settings) return;
+            $('.value').each(function () {
+                var $key = $(this);
+                var id = $key.attr('id');
+                if ($key.attr('type') === 'checkbox') {
+                    // do not call onChange direct, because onChange could expect some arguments
+                    $key.prop('checked', settings[id])
+                        .on('change', () => onChange())
+                        ;
+                } else {
+                    // do not call onChange direct, because onChange could expect some arguments
+                    $key.val(settings[id])
+                        .on('change', () => onChange())
+                        .on('keyup', () => onChange())
+                        ;
                 }
-                return resolve(obj);
             });
-        });
-    }
+            onChange(false);
+            // reinitialize all the Materialize labels on the page if you are dynamically adding inputs:
+            if (M) M.updateTextFields();
+        }
 
-    getObjectP(tag) {
-        return new Promise((resolve, reject) => {
-            return this.getObject(tag, (error, obj) => {
-                if (error) {
-                    return reject(error);
+        // This will be called by the admin adapter when the user presses the save button
+        function save(callback) {
+            // example: select elements with class=value and build settings object
+            var obj = {};
+            $('.value').each(function () {
+                var $this = $(this);
+                if ($this.attr('type') === 'checkbox') {
+                    obj[$this.attr('id')] = $this.prop('checked');
+                } else if ($this.attr('type') === 'number') {
+                    obj[$this.attr('id')] = parseFloat($this.val());
+                } else {
+                    obj[$this.attr('id')] = $this.val();
                 }
-                return resolve(obj);
             });
-        });
-    }
-
-    /**
-     * Is called when databases are connected and adapter received configuration.
-     */
-    async onReady() {
-        // Initialize your adapter here    
-        // The adapters config (in the instance object everything under the attribute "native") is accessible via
-        this.log.debug('IP-Address of Powerdog: ' + this.config.IpAddress);
-        this.log.debug('Port of Powerdog: ' + this.config.Port);
-        this.log.debug('API-Key of Powerdog: ' + this.config.ApiKey);
-
-        /**
-        *
-        *      For every state in the system there has to be also an object of type state
-        *      Here a simple powerdog for a boolean variable named "testVariable"
-        *      Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-        */
-        // Creates an XML-RPC client. Passes the host information on where to
-        // make the XML-RPC calls.
-        this.client = xmlrpc.createClient({ host: this.config.IpAddress, port: this.config.Port, path: '/' })
-
-        // Check if one of the Info Object are present. Query them only one time
-        if (await this.getObjectP('Info.FullVersion').catch((err) => { this.log.error('getObjectP: ' + err); }) === null) {
-            // Sends a method call to the XML-RPC server
-            var obj = await this.clientXmlRpcP('getPowerDogInfo').catch((err) => { this.log.error('XML-RPC-P: ' + err); });
-            for (let key in obj) {
-                // checking if it's nested
-                if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
-                    let objInfo = obj[key];
-                    for (let keyInfo in objInfo) {
-                        this.log.debug(keyInfo + ': ' + objInfo[keyInfo]);
-                        var name = 'Info.' + keyInfo;
-                        await this.setObjectNotExists(name, {
-                            type: 'state',
-                            common: {
-                                name: keyInfo,
-                                type: 'string',
-                                role: 'text',
-                                read: true,
-                                write: false,
-                            },
-                            native: {}
-                        });
-                        this.setState(name, { val: objInfo[keyInfo], ack: true });
-                    }
-                }
-            }
+            callback(obj);
         }
+    </script>
 
-        // this.log.debug(JSON.stringify(obj));
+</head>
 
-        // Sends a method call to the XML-RPC server
-        var obj = await this.clientXmlRpcP('getSensors').catch((err) => { this.log.error('XML-RPC: ' + err); });
-        for (let key in obj) {
-            // checking if it's nested
-            if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
-                let objSensor = obj[key];
-                for (let keySensor in objSensor) {
-                    this.log.debug(keySensor);
-                    if (objSensor.hasOwnProperty(keySensor) && (typeof objSensor[keySensor] === "object")) {
-                        let objSensorInfo = objSensor[keySensor];
-                        this.log.debug(objSensorInfo);
-                        for (let keyInfo in objSensorInfo) {
-                            this.log.debug(keyInfo + ': ' + objSensorInfo[keyInfo]);
-                            var name = 'Sensors.' + keySensor + '.' + keyInfo;
-                            var type_nan = null;
-                            var role_nan = null;
-                            if (isNaN(objSensorInfo[keyInfo])) {
-                                type_nan = 'string'
-                                role_nan = 'text'
-                            }
-                            else {
-                                type_nan = 'number'
-                                role_nan = 'value'
-                            }
-                            await this.setObjectNotExistsAsync(name, {
-                                type: 'state',
-                                common: {
-                                    name: keyInfo,
-                                    type: type_nan,
-                                    role: role_nan,
-                                    read: true,
-                                    write: false,
-                                },
-                                native: {}
-                            });
-                            this.setState(name, { val: objSensorInfo[keyInfo], ack: true });
-                        }
-                    }
-                }
-            }
-        }
+<body>
+    <div class="m adapter-container">
+        <div class="row">
+            <div class="col s12 m4 l2">
+                <img src="powerdog.png" class="logo">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12 m6 l4">
+                <input class="value" id="IpAddress" type="text">
+                <label for="IP-Address" class="translate">IP-Address</label>
+                <!--  You can add custom validation messages by adding either data-error or data-success attributes to your input field labels.-->
+                <span class="translate">IP-Address of PowerDog</span>
+            </div>
+            <div class="input-field col s12 m6 l4">
+                <input class="value" id="ApiKey" type="text">
+                <label for="API-Key" class="translate">API-Key</label>
+                <!--  You can add custom validation messages by adding either data-error or data-success attributes to your input field labels.-->
+                <span class="translate">API-Key of PowerDog</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12 m6 l4">
+                <input class="value" id="Port" type="number">
+                <label for="Port" class="translate">Port</label>
+                <!-- Important: label must come directly after input. Label is important. -->
+                <span class="translate">Port of PowerDog</span>
+            </div>
+            <div class="input-field col s12 m6 l4">
+                <input class="value" id="CreateObjects" type="checkbox">
+                <label for="CreateObjects" class="translate">Create Objects</label>
+                <!-- Important: label must come directly after input. Label is important. -->
+                <span class="translate">Create Objects. Should be set on first run</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12 m6 l4">
+                <p class="translate">on save adapter restarts with new config</p>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
 
-        // this.log.debug('PowerDog sensor data: ' + JSON.stringify(obj));
-
-        // Sends a method call to the XML-RPC server
-        var obj = await this.clientXmlRpcP('getCounters').catch((err) => { this.log.error('XML-RPC: ' + err); });
-        for (let key in obj) {
-            // checking if it's nested
-            if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
-                let objCounter = obj[key];
-                for (let keyCounter in objCounter) {
-                    this.log.debug(keyCounter);
-                    if (objCounter.hasOwnProperty(keyCounter) && (typeof objCounter[keyCounter] === "object")) {
-                        let objCounterInfo = objCounter[keyCounter];
-                        this.log.debug(objCounterInfo);
-                        for (let keyInfo in objCounterInfo) {
-                            this.log.debug(keyInfo + ': ' + objCounterInfo[keyInfo]);
-                            var name = 'Counters.' + keyCounter + '.' + keyInfo;
-                            var type_nan = null;
-                            var role_nan = null;
-                            if (isNaN(objCounterInfo[keyInfo])) {
-                                type_nan = 'string'
-                                role_nan = 'text'
-                            }
-                            else {
-                                type_nan = 'number'
-                                role_nan = 'value'
-                            }
-                            await this.setObjectNotExistsAsync(name, {
-                                type: 'state',
-                                common: {
-                                    name: keyInfo,
-                                    type: type_nan,
-                                    role: role_nan,
-                                    read: true,
-                                    write: false,
-                                },
-                                native: {}
-                            });
-                            this.setState(name, { val: objCounterInfo[keyInfo], ack: true });
-                        }
-                    }
-                }
-            }
-        }
-
-        // this.log.debug('PowerDog sensor data: ' + JSON.stringify(obj));
-        this.stop()
-        // this.killTimeout = setTimeout(this.stop.bind(this), 0 );
-    }
-
-    /**
-     * Is called when adapter shuts down - callback has to be called under any circumstances!
-     * @param {() => void} callback
-     */
-    onUnload(callback) {
-        this.log.debug('cleaned everything up...');
-        callback();
-    } catch(e) {
-        callback();
-    }
-}
-
-// @ts-ignore parent is a valid property on module
-if (module.parent) {
-    // Export the constructor in compact mode
-    /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
-     */
-    module.exports = (options) => new PowerDog(options);
-} else {
-    // otherwise start the instance directly
-    new PowerDog();
-}
+</html>

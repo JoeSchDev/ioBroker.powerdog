@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "iobroker.powerdog",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "news": {
             "0.0.1": {
                 "en": "initial release",
@@ -18,48 +18,39 @@
             "1.0.0": {
                 "en": "New Template adapted",
                 "de": "Neues Template adaptiert"
-			}
+            },
+            "1.1.0": {
+                "en": "Parallel execution",
+                "de": "Parallele Auführung"
+            }
         },
-		"title": "PowerDog",
+        "title": "PowerDog",
         "titleLang": {
-            "en": "PowerDog",
-            "de": "PowerDog",
-            "ru": "PowerDog",
-            "pt": "PowerDog",
-            "nl": "PowerDog",
-            "fr": "PowerDog",
-            "it": "PowerDog",
-            "es": "PowerDog"
+            "en": "Powerdog for ecodata devide",
+            "de": "Powerdog für ein ecodata Gerät"
         },
         "desc": {
             "en": "For PowerDog device from ecodata",
-            "de": "Für PowerDog Geräte von ecodata",
-            "ru": "PowerDog как образец",
-            "pt": "Modelo de adaptador para o PowerDog",
-            "fr": "PowerDog adaptateur modèle",
-            "nl": "PowerDog",
-            "it": "Adattatore modello PowerDog",
-            "es": "Adaptador de plantilla PowerDog"
+            "de": "Für PowerDog Geräte von ecodata"
         },
         "authors": [
             "Author <JoeSchDev@gmail.com>"
         ],
         "keywords": [
-		"powerdog",
-		"Smart Home",
-	        "home automation" 
-	],
-        
+            "powerdog",
+            "Smart Home",
+            "home automation"
+        ],
         "license": "MIT",
         "platform": "Javascript/Node.js",
-	"main": "main.js",
+        "main": "main.js",
         "icon": "powerdog.png",
         "enabled": true,
         "extIcon": "https://raw.githubusercontent.com/JoeSchDev/iobroker.powerdog/master/admin/powerdog.png",
         "readme": "https://github.com/JoeSchDev/iobroker.powerdog/master/README.md",
         "loglevel": "info",
         "mode": "schedule",
-		"schedule": "*/5 * * * *",
+        "schedule": "*/1 * * * *",
         "type": "general",
         "compact": true,
         "materialize": true,
@@ -91,7 +82,8 @@
     "native": {
         "IpAddress": "0.0.0.0",
         "ApiKey": "abcde",
-        "Port": 20000
+        "Port": 20000,
+        "CreateObjets": true
     },
     "objects": [],
     "instanceObjects": []
