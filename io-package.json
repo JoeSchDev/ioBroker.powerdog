@@ -83,7 +83,7 @@
         "IpAddress": "0.0.0.0",
         "ApiKey": "abcde",
         "Port": 20000,
-        "CreateObjets": true
+        "CreateObjs": true
     },
     "objects": [],
     "instanceObjects": []
