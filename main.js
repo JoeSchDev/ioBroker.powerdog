@@ -312,14 +312,13 @@ class PowerDog extends utils.adapter {
     }
 }
 
-// @ts-ignore parent is a valid property on module
-if (module.parent) {
-    // Export the constructor in compact mode
-    /**
-     * @param {Partial<utils.adapterOptions>} [options={}]
-     */
-    module.exports = (options) => new PowerDog(options);
+if (require.main !== module) {
+	// Export the constructor in compact mode
+	/**
+	 * @param {Partial<utils.AdapterOptions>} [options={}]
+	 */
+	module.exports = (options) => new PowerDog(options);
 } else {
-    // otherwise start the instance directly
-    new PowerDog();
+	// otherwise start the instance directly
+	new PowerDog();
 }

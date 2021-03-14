@@ -30,8 +30,8 @@ systemDictionary = {
         'en': 'Create Objects',
         'de': 'Kreiere Objekte'
     },
-    'Create Objects. Should be set on first run': {
-        'en': 'Create Objects. Should be set on first run',
+    'Should be set on first only to create the Objects': {
+        'en': 'Should be set on first only to create the Objects',
         'de': 'Sollte beim allerersten Start gesetzt sein'
     }
 };
