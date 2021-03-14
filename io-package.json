@@ -26,7 +26,7 @@
         },
         "title": "PowerDog",
         "titleLang": {
-            "en": "Powerdog for ecodata device",
+            "en": "Powerdog for ecodata devide",
             "de": "Powerdog für ein ecodata Gerät"
         },
         "desc": {
@@ -54,26 +54,9 @@
         "schedule": "*/1 * * * *",
         "type": "general",
         "compact": true,
+		"connectionType": "local",
+		"dataSource": "poll",
         "materialize": true,
-        "materializeTab": true,
-        "adminTab": {
-            "singleton": true,
-            "name": {
-                "en": "PowerDog (JavaScript)",
-                "de": "PowerDog (JavaScript)",
-                "ru": "PowerDog (JavaScript)",
-                "pt": "PowerDog (JavaScript)",
-                "nl": "PowerDog (JavaScript)",
-                "fr": "PowerDog (JavaScript)",
-                "it": "PowerDog (JavaScript)",
-                "es": "PowerDog (JavaScript)",
-                "pl": "PowerDog (JavaScript)",
-                "zh-cn": "PowerDog (JavaScript)"
-            },
-            "link": "",
-            "fa-icon": "info"
-        },
-        "supportCustoms": true,
         "dependencies": [
             {
                 "js-controller": ">=2.0.0"
@@ -87,5 +70,27 @@
         "CreateObjs": true
     },
     "objects": [],
-    "instanceObjects": []
+	"instanceObjects": [
+		{
+			"_id": "info",
+			"type": "channel",
+			"common": {
+				"name": "Information"
+			},
+			"native": {}
+		},
+		{
+			"_id": "info.connection",
+			"type": "state",
+			"common": {
+				"role": "indicator.connected",
+				"name": "Device or service connected",
+				"type": "boolean",
+				"read": true,
+				"write": false,
+				"def": false
+			},
+			"native": {}
+		}
+	]
 }
