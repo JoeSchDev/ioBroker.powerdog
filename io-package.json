@@ -51,6 +51,7 @@
         "readme": "https://github.com/JoeSchDev/iobroker.powerdog/master/README.md",
         "loglevel": "info",
         "mode": "schedule",
+        "allowInit": true,
         "schedule": "*/1 * * * *",
         "type": "general",
         "compact": true,
