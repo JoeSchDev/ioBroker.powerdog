@@ -27,16 +27,6 @@ class PowerDog extends utils.adapter {
 
         adapter = this;
 
-        // If it has been a force reinit run, set it to false and restart
-        if (adapter.config.CreateObjs) {
-            adapter.log.info('Restarting now, because we had a forced reinitialization run');
-            try {
-                adapter.extendForeignObjectAsync(`system.adapter.${adapter.namespace}`, {native: {CreateObjs: false}});
-            } catch (e) {
-                adapter.log.error(`Could not restart and set forceReinit to false: ${e.message}`);
-            }
-        }
-
         // Number of tasks
         this.tasks = 3;
         // XML.RPC client
@@ -47,7 +37,21 @@ class PowerDog extends utils.adapter {
         // adapter.on('objectChange', adapter.onObjectChange.bind(this));
         // adapter.on('message', adapter.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
-        this.on('internal_done', this.onDone.bind(this));
+        this.on('internalDone', this.onDone.bind(this));
+    }
+
+    /**
+     * Used for synchronous call to XML-RPC
+     */
+    async clientXmlRpcP(tag) {
+        return new Promise((resolve, reject) => {
+            return this.client.methodCall(tag, [this.config.ApiKey], (error, obj) => {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(obj);
+            });
+        });
     }
 
     /**
@@ -60,28 +64,125 @@ class PowerDog extends utils.adapter {
         }
     }
 
+    /**
+     * Creates and sets Objects. This is serialized!
+     */
+    async createQueryObjects() {
+        // Sends a method call to the XML-RPC server
+        var obj = await this.clientXmlRpcP('getPowerDogInfo').catch((err) => { this.log.error('XML-RPC-P: ' + err); });
+        for (let key in obj) {
+            // checking if it's nested
+            if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+                let objInfo = obj[key];
+                for (let keyInfo in objInfo) {
+                    this.log.debug(keyInfo + ': ' + objInfo[keyInfo]);
+                    var name = 'Info.' + keyInfo;
+                    await this.setObjectNotExists(name, {
+                        type: 'state',
+                        common: {
+                            name: keyInfo,
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: false,
+                        },
+                        native: {}
+                    });
+                    this.setState(name, { val: objInfo[keyInfo], ack: true });
+                }
+            }
+        }
+
+        // Sends a method call to the XML-RPC server
+        var obj = await this.clientXmlRpcP('getSensors').catch((err) => { this.log.error('XML-RPC: ' + err); });
+        for (let key in obj) {
+            // checking if it's nested
+            if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+                let objSensor = obj[key];
+                for (let keySensor in objSensor) {
+                    this.log.debug(keySensor);
+                    if (objSensor.hasOwnProperty(keySensor) && (typeof objSensor[keySensor] === "object")) {
+                        let objSensorInfo = objSensor[keySensor];
+                        this.log.debug(objSensorInfo);
+                        for (let keyInfo in objSensorInfo) {
+                            this.log.debug(keyInfo + ': ' + objSensorInfo[keyInfo]);
+                            var name = 'Sensors.' + keySensor + '.' + keyInfo;
+                            var type_nan = null;
+                            var role_nan = null;
+                            if (isNaN(objSensorInfo[keyInfo])) {
+                                type_nan = 'string'
+                                role_nan = 'text'
+                            }
+                            else {
+                                type_nan = 'number'
+                                role_nan = 'value'
+                            }
+                            await this.setObjectNotExistsAsync(name, {
+                                type: 'state',
+                                common: {
+                                    name: keyInfo,
+                                    type: type_nan,
+                                    role: role_nan,
+                                    read: true,
+                                    write: false,
+                                },
+                                native: {}
+                            });
+                            this.setState(name, { val: objSensorInfo[keyInfo], ack: true });
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sends a method call to the XML-RPC server
+        var obj = await this.clientXmlRpcP('getCounters').catch((err) => { this.log.error('XML-RPC: ' + err); });
+        for (let key in obj) {
+            // checking if it's nested
+            if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+                let objCounter = obj[key];
+                for (let keyCounter in objCounter) {
+                    this.log.debug(keyCounter);
+                    if (objCounter.hasOwnProperty(keyCounter) && (typeof objCounter[keyCounter] === "object")) {
+                        let objCounterInfo = objCounter[keyCounter];
+                        this.log.debug(objCounterInfo);
+                        for (let keyInfo in objCounterInfo) {
+                            this.log.debug(keyInfo + ': ' + objCounterInfo[keyInfo]);
+                            var name = 'Counters.' + keyCounter + '.' + keyInfo;
+                            var type_nan = null;
+                            var role_nan = null;
+                            if (isNaN(objCounterInfo[keyInfo])) {
+                                type_nan = 'string'
+                                role_nan = 'text'
+                            }
+                            else {
+                                type_nan = 'number'
+                                role_nan = 'value'
+                            }
+                            await this.setObjectNotExistsAsync(name, {
+                                type: 'state',
+                                common: {
+                                    name: keyInfo,
+                                    type: type_nan,
+                                    role: role_nan,
+                                    read: true,
+                                    write: false,
+                                },
+                                native: {}
+                            });
+                            this.setState(name, { val: objCounterInfo[keyInfo], ack: true });
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /**
-     * Is called when databases are connected and adapter received configuration.
+     * Queries the values parallized
      */
-    async onReady() {
-        // Initialize your adapter here    
-        // The adapters config (in the instance object everything under the attribute "native") is accessible via
-        this.log.debug('IP-Address of Powerdog: ' + adapter.config.IpAddress);
-        this.log.debug('Port of Powerdog: ' + adapter.config.Port);
-        this.log.debug('API-Key of Powerdog: ' + adapter.config.ApiKey);
-
-        /**
-        *
-        *      For every state in the system there has to be also an object of type state
-        *      Here a simple powerdog for a boolean variable named "testVariable"
-        *      Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-        */
-        // Creates an XML-RPC client. Passes the host information on where to
-        // make the XML-RPC calls.
-        adapter.client = xmlrpc.createClient({ host: adapter.config.IpAddress, port: adapter.config.Port, path: '/' })
-
-        // Query Infos from XML-RPC server
+    queryObjects() {
+        // Quuery Info from XML-RPC server
         adapter.client.methodCall('getPowerDogInfo', [this.config.ApiKey], function (error, obj, reply) {
             if (error) {
                 adapter.log.error('XML-RPC');
@@ -94,24 +195,12 @@ class PowerDog extends utils.adapter {
                         for (let keyInfo in objInfo) {
                             adapter.log.debug(keyInfo + ': ' + objInfo[keyInfo]);
                             var name = 'Info.' + keyInfo;
-                            adapter.setObjectNotExists(name, {
-                                type: 'state',
-                                common: {
-                                    name: keyInfo,
-                                    type: 'string',
-                                    role: 'text',
-                                    read: true,
-                                    write: false,
-                                },
-                                native: {}
-                            });
                             adapter.setState(name, { val: objInfo[keyInfo], ack: true });
                         }
                     }
                 }
-
             }
-            adapter.emit('internal_done');
+            adapter.emit('internalDone');
         });
         // adapter.log.debug(JSON.stringify(obj));
 
@@ -133,35 +222,14 @@ class PowerDog extends utils.adapter {
                                 for (let keyInfo in objSensorInfo) {
                                     adapter.log.debug(keyInfo + ': ' + objSensorInfo[keyInfo]);
                                     var name = 'Sensors.' + keySensor + '.' + keyInfo;
-                                    var type_nan = null;
-                                    var role_nan = null;
-                                    if (isNaN(objSensorInfo[keyInfo])) {
-                                        type_nan = 'string'
-                                        role_nan = 'text'
-                                    }
-                                    else {
-                                        type_nan = 'number'
-                                        role_nan = 'value'
-                                    }
-                                    adapter.setObjectNotExistsAsync(name, {
-                                        type: 'state',
-                                        common: {
-                                            name: keyInfo,
-                                            type: type_nan,
-                                            role: role_nan,
-                                            read: true,
-                                            write: false,
-                                        },
-                                        native: {}
-                                    });
                                     adapter.setState(name, { val: objSensorInfo[keyInfo], ack: true });
                                 }
                             }
                         }
                     }
                 }
-                adapter.emit('internal_done');
             }
+            adapter.emit('internalDone');
         });
         // adapter.log.debug('PowerDog sensor data: ' + JSON.stringify(obj));
 
@@ -184,40 +252,53 @@ class PowerDog extends utils.adapter {
                                 for (let keyInfo in objCounterInfo) {
                                     adapter.log.debug(keyInfo + ': ' + objCounterInfo[keyInfo]);
                                     var name = 'Counters.' + keyCounter + '.' + keyInfo;
-                                    var type_nan = null;
-                                    var role_nan = null;
-                                    if (isNaN(objCounterInfo[keyInfo])) {
-                                        type_nan = 'string'
-                                        role_nan = 'text'
-                                    }
-                                    else {
-                                        type_nan = 'number'
-                                        role_nan = 'value'
-                                    }
-                                    adapter.setObjectNotExistsAsync(name, {
-                                        type: 'state',
-                                        common: {
-                                            name: keyInfo,
-                                            type: type_nan,
-                                            role: role_nan,
-                                            read: true,
-                                            write: false,
-                                        },
-                                        native: {}
-                                    });
                                     adapter.setState(name, { val: objCounterInfo[keyInfo], ack: true });
                                 }
                             }
                         }
                     }
                 }
-                adapter.emit('internal_done');
             }
+            adapter.emit('internalDone');
         });
-        // adapter.log.debug('PowerDog sensor data: ' + JSON.stringify(obj));
-        //    adapter.stop()
+    }
+
+    /**
+     * Is called when databases are connected and adapter received configuration.
+     */
+    async onReady() {
+        // Initialize your adapter here    
+        // The adapters config (in the instance object everything under the attribute "native") is accessible via
+        this.log.debug('IP-Address of Powerdog: ' + adapter.config.IpAddress);
+        this.log.debug('API-Key of Powerdog: ' + adapter.config.ApiKey);
+        this.log.debug('Port of Powerdog: ' + adapter.config.Port);
+        this.log.debug('Create Objects: ' + adapter.config.CreateObjs);
+
+        // If it has been a force reinit run, set it to false and restart
+        if (adapter.config.CreateObjs) {
+            adapter.log.info('Restarting now, because we had a forced reinitialization run');
+            try {
+                adapter.extendForeignObjectAsync(`system.adapter.${adapter.namespace}`, { native: { CreateObjs: false } });
+            } catch (e) {
+                adapter.log.error(`Could not restart and set forceReinit to false: ${e.message}`);
+            }
+        }
+
+        // Creates an XML-RPC client. Passes the host information on where to
+        // make the XML-RPC calls.
+        adapter.client = xmlrpc.createClient({ host: adapter.config.IpAddress, port: adapter.config.Port, path: '/' })
+
+        if (this.config.CreateObjs) {
+            await this.createQueryObjects();
+            this.stop()
         // adapter.killTimeout = setTimeout(adapter.stop.bind(this), 0 );
     }
+        else {
+            this.queryObjects();
+        }
+
+    }
+    // this.log.debug('PowerDog sensor data: ' + JSON.stringify(obj));
 
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
