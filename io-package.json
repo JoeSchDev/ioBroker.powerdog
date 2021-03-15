@@ -15,6 +15,10 @@
                 "pl": "Pierwsze wydanie",
                 "zh-cn": "首次出版"
             },
+            "0.0.2": {
+                "en": "Improvement",
+                "de": "Verbesserung"
+            },
             "1.0.0": {
                 "en": "New Template adapted",
                 "de": "Neues Template adaptiert"
@@ -71,27 +75,5 @@
         "CreateObjs": true
     },
     "objects": [],
-	"instanceObjects": [
-		{
-			"_id": "info",
-			"type": "channel",
-			"common": {
-				"name": "Information"
-			},
-			"native": {}
-		},
-		{
-			"_id": "info.connection",
-			"type": "state",
-			"common": {
-				"role": "indicator.connected",
-				"name": "Device or service connected",
-				"type": "boolean",
-				"read": true,
-				"write": false,
-				"def": false
-			},
-			"native": {}
-		}
-	]
+	"instanceObjects": []
 }

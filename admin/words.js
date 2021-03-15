@@ -26,12 +26,23 @@ systemDictionary = {
         'en': 'Port of PowerDog',
         'de': 'Port des PowerDog'
     },
-    'Create Objects': {
-        'en': 'Create Objects',
-        'de': 'Kreiere Objekte'
+    'Create Objects & reads Info': {
+        'en': 'Create Objects & reads Info',
+        'de': 'Kreiere Objekte und liest Info'
     },
-    'Should be set only on the first run to create the objects': {
-        'en': 'Should be set only on the first run to create the objects',
-        'de': 'Sollte beim allerersten Start gesetzt sein'
+    'Creates all PowerDog objects': {
+        'en': 'Creates all PowerDog objects',
+        'de': 'Kreiert alle PowerDog Objekte'
+    },
+    'Reads all Powerdog objects': {
+        'en': 'Reads all Powerdog objects',
+        'de': 'Liest alle PowerDog Objekte'
+    },
+    'Reads Powerdog static Informations': {
+        'en': 'Reads Powerdog static Informations',
+        'de': 'Liest die PowerDog Informationen'
     }
 };
+
+
+
