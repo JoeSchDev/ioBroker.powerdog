@@ -28,7 +28,7 @@ class PowerDog extends utils.adapter {
         adapter = this;
 
         // Number of tasks
-        this.tasks = 3;
+        this.tasks = 2; // Counters and Sensors
         // XML.RPC client
         this.client = null;
 
@@ -182,28 +182,6 @@ class PowerDog extends utils.adapter {
      * Queries the values parallized
      */
     queryObjects() {
-        // Quuery Info from XML-RPC server
-        adapter.client.methodCall('getPowerDogInfo', [this.config.ApiKey], function (error, obj, reply) {
-            if (error) {
-                adapter.log.error('XML-RPC');
-            }
-            else {
-                for (let key in obj) {
-                    // checking if it's nested
-                    if (key === 'Reply' && obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
-                        let objInfo = obj[key];
-                        for (let keyInfo in objInfo) {
-                            adapter.log.debug(keyInfo + ': ' + objInfo[keyInfo]);
-                            var name = 'Info.' + keyInfo;
-                            adapter.setState(name, { val: objInfo[keyInfo], ack: true });
-                        }
-                    }
-                }
-            }
-            adapter.emit('internalDone');
-        });
-        // adapter.log.debug(JSON.stringify(obj));
-
         // Query Sensors from XML-RPC server
         adapter.client.methodCall('getSensors', [this.config.ApiKey], function (error, obj, reply) {
             if (error) {
@@ -274,29 +252,27 @@ class PowerDog extends utils.adapter {
         this.log.debug('Port of Powerdog: ' + adapter.config.Port);
         this.log.debug('Create Objects: ' + adapter.config.CreateObjs);
 
-        // If it has been a force reinit run, set it to false and restart
-        if (adapter.config.CreateObjs) {
-            adapter.log.info('Restarting now, because we had a forced reinitialization run');
-            try {
-                adapter.extendForeignObjectAsync(`system.adapter.${adapter.namespace}`, { native: { CreateObjs: false } });
-            } catch (e) {
-                adapter.log.error(`Could not restart and set forceReinit to false: ${e.message}`);
-            }
-        }
-
         // Creates an XML-RPC client. Passes the host information on where to
         // make the XML-RPC calls.
-        adapter.client = xmlrpc.createClient({ host: adapter.config.IpAddress, port: adapter.config.Port, path: '/' })
+        this.client = xmlrpc.createClient({ host: this.config.IpAddress, port: adapter.config.Port, path: '/' })
 
         if (this.config.CreateObjs) {
             await this.createQueryObjects();
+            // If it has been a force reinit run, set it to false and restart
+            if (this.config.CreateObjs) {
+                this.log.info('Restarting now, because we generated the objects and read the static info');
+                try {
+                    this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, { native: { CreateObjs: false } });
+                } catch (e) {
+                    this.log.error(`Could not restart: ${e.message}`);
+                }
+            }
             this.stop()
-        // adapter.killTimeout = setTimeout(adapter.stop.bind(this), 0 );
-    }
+            //adapter.killTimeout = setTimeout(adapter.stop.bind(this), 10000 );
+        }
         else {
             this.queryObjects();
         }
-
     }
     // this.log.debug('PowerDog sensor data: ' + JSON.stringify(obj));
 
@@ -313,12 +289,12 @@ class PowerDog extends utils.adapter {
 }
 
 if (require.main !== module) {
-	// Export the constructor in compact mode
-	/**
-	 * @param {Partial<utils.AdapterOptions>} [options={}]
-	 */
-	module.exports = (options) => new PowerDog(options);
+    // Export the constructor in compact mode
+    /**
+     * @param {Partial<utils.AdapterOptions>} [options={}]
+     */
+    module.exports = (options) => new PowerDog(options);
 } else {
-	// otherwise start the instance directly
-	new PowerDog();
+    // otherwise start the instance directly
+    new PowerDog();
 }
