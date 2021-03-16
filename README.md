@@ -14,11 +14,11 @@ If you have a PowerDog device you can use this adapter to query alle the sensors
 
 ### 1.0.0
 * (Joachim Schmalz) New Adapter template. Serialized to avoid warning on first start
-## License
 
 ### 1.1.0
 * (Joachim Schmalz) Speed improvements. Parallelized value query
 
+## License
 MIT License
 
 Copyright (c) 2021 Joachim Schmalz <JoeDev002@gmail.com>
